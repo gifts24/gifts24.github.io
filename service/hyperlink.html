@@ -1,0 +1,507 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<style>
+			/* 기초 CSS 디자인 */
+			.hidden {
+			  display:none;
+			  visibility:hidden;
+			}
+			
+			
+			/* 버튼으로 사용할 라벨 디자인 */
+			.button {
+			  font-size:19px;
+			  font-weight:600;
+			  vertical-align:middle;
+			  cursor:pointer;
+			}
+			
+			/* 모달 윈도우 디자인 */
+			.box_modal {
+			  position:fixed;
+			  display:block;
+			  width:650px;
+			  height:200px;
+			  top:18%;
+			  left:70%;
+			  margin-top:-150px;
+			  margin-left:-400px;
+			  background:#d9e5e9;
+			  border:1px solid #386980;
+			  overflow:hidden;
+			
+			
+			  /* 아래 부분은 애니메이션 효과를 위한 부분 */
+			  visibility: collapse;
+			  opacity: 0.6;
+			  filter: alpha(opacity=60);
+			  -webkit-transition: all .2s ease;
+			  transition: all .2s ease;
+			  -webkit-transform: scale(0, 0);
+			  -ms-transform: scale(0, 0);
+			  transform: scale(0, 0);
+			}
+			.box_modal:hover {
+			  opacity: 1;
+			  filter: alpha(opacity=100);
+			}
+			
+			/* 닫기 버튼으로 사용할 라벨 */
+			.closer {
+			  position:absolute;
+			  width:30px;
+			  height:30px;
+			  top:0;
+			  right:0;
+			  background:#eee;
+			  border-left:1px solid #386980;
+			  border-bottom:1px solid #386980;
+			  text-align:center;
+			  line-height:26px;
+			  font-size:16x;
+			  cursor:pointer;
+			}
+			.text {
+			  display:inline-block;
+			  padding:20px;
+			}
+			.text h3 {
+			  font-size:19px;
+			  margin:0;
+			}
+			.text p {
+			  font-size:13px;
+			}
+			
+			/* 모달 윈도우가 팝업되는 코어 소스 */
+			input#modal[type=checkbox]:checked ~ .box_modal {
+			  visibility: visible;
+			  -webkit-transform: scale(1, 1);
+			  -ms-transform: scale(1, 1);
+			  transform: scale(1, 1);
+			}
+			</style>
+
+</head>
+<body>
+	<title>이미지 영역지정 하이퍼링크 설정</title>
+
+<script language="JavaScript1.2">
+isIE=document.all;
+isNN=!document.all&&document.getElementById;
+isHot=false;
+var MovableItem
+var maxTiles=100
+var moveObject=new Array(maxTiles)
+var ActiveSwatch
+//------------------
+// functions
+//------------------
+
+
+function startMove(e){
+    if (!MovableItem){return;}
+    canvas=isIE ? "BODY" : "HTML";
+    	activeItem=isIE ? event.srcElement : e.target;  
+    	offsetx=isIE ? event.clientX : e.clientX;
+    	offsety=isIE ? event.clientY : e.clientY;
+    	lastX=parseInt(MovableItem.style.left);
+    	lastY=parseInt(MovableItem.style.top);
+    	lastW=parseInt(MovableItem.style.width);
+    	lastH=parseInt(MovableItem.style.height);
+	if (offsetx+scrollAmt[0]>=(MovableItem.parentNode.offsetLeft+parseInt(MovableItem.style.left)+(MovableItem.offsetWidth*.98))|| offsety+scrollAmt[1]>=(MovableItem.parentNode.offsetTop+parseInt(MovableItem.style.top)+(MovableItem.offsetHeight*.98)) ){edge=true; MovableItem.style.cursor="se-resize"} else{edge=false;MovableItem.style.cursor="move"}
+	moveEnabled=true;
+    document.onmousemove=moveIt;
+}
+
+function moveIt(e){
+  if (!moveEnabled||!MovableItem) return;
+	// display info during testing
+	MovableItem.innerHTML='<span style="position:absolute; left:0px; top:0px;"> '+MovableItem.offsetLeft+', '+MovableItem.offsetTop+' <br> '+
+		MovableItem.offsetWidth+', '+MovableItem.offsetHeight+' <br>'+
+		' <b>'+(parseInt(MovableItem.id.replace('popup',''))+1)+'</b>'
+		//moveObject[0].style.zIndex+' '+moveObject[1].style.zIndex+' '+moveObject[2].style.zIndex+' '+moveObject[3].style.zIndex+'</span>'
+ 	if (edge){
+  		MovableItem.style.width=isIE ? event.clientX-offsetx +lastW : e.clientX-offsetx+lastW; 
+  		MovableItem.style.height=isIE ? event.clientY-offsety +lastH : e.clientY-offsety+lastH; 
+		return false;
+  	} else{
+  		MovableItem.style.left=isIE ? lastX+event.clientX-offsetx : lastX+e.clientX-offsetx; 
+  		MovableItem.style.top=isIE ? lastY+event.clientY-offsety : lastY+e.clientY-offsety;
+  		return false;
+	}  
+}
+
+
+function poplayer(topObject){
+  if (!topObject) {return;}
+	for (var i=0; i<moveObject.length; i++){
+		moveObject[i].style.borderColor='silver'
+		if (moveObject[i].style.zIndex>topObject.style.zIndex-1 && moveObject[i]!=topObject)
+		{moveObject[i].style.zIndex=moveObject[i].style.zIndex-1}
+	}
+   	topObject.style.zIndex=moveObject.length-1
+	topObject.style.borderColor='black'
+	ActiveSwatch=topObject
+	showLink(parseInt(ActiveSwatch.id.replace('popup','')))
+
+}
+
+function test(obj, X, Y){
+	scrollAmt=puGetScrollXY(); //0 is X and 1 is Y
+	//alert(X+scrollAmt[0]+' '+(obj.parentNode.offsetLeft+parseInt(obj.style.left)+(obj.offsetWidth*.98)) )
+	//alert(obj.style.left+' '+obj.offsetWidth+' '+X+'  \n'+obj.style.top+' '+obj.offsetHeight+' '+Y+' '+obj.parentNode.offsetTop+' '+scrollAmt[1])
+	if (X+scrollAmt[0]>=(obj.parentNode.offsetLeft+parseInt(obj.style.left)+(obj.offsetWidth*.98)) || Y+scrollAmt[1]>=(obj.parentNode.offsetTop+parseInt(obj.style.top)+(obj.offsetHeight*.98)) ) {obj.style.cursor="se-resize"} else{obj.style.cursor="move"}
+}
+
+function createTile(){
+	// when user clicks the deck, deal out a new tile
+	for (var i=0; i<maxTiles; i++){
+		if (moveObject[i].style.visibility=="hidden"){
+			moveObject[i].style.width=100
+			moveObject[i].style.height=80
+			moveObject[i].style.left=-10
+			moveObject[i].style.top=-10
+			moveObject[i].style.visibility="visible"
+			moveObject[i].style.display="block"
+			poplayer(moveObject[i])
+			showLink(i)
+		return
+		}
+		
+	}
+}
+
+function showLink(itm){
+	for (var i=0; i<maxTiles; i++){
+	document.getElementById('linker'+i).style.visibility='hidden'
+	document.getElementById('title'+i).style.visibility='hidden'
+	document.getElementById('linker'+i).style.display='none'
+	document.getElementById('title'+i).style.display='none'
+	}
+	document.getElementById('linker'+itm).style.visibility='visible'
+	document.getElementById('title'+itm).style.visibility='visible'
+	document.getElementById('linker'+itm).style.display='block'
+	document.getElementById('title'+itm).style.display='block'
+}
+
+function killTile(){
+	if (!ActiveSwatch){return}
+	ActiveSwatch.style.visibility="hidden"
+	ActiveSwatch.style.display="none"
+	document.getElementById('linker'+parseInt(ActiveSwatch.id.replace('popup',''))).value=''
+	document.getElementById('title'+parseInt(ActiveSwatch.id.replace('popup',''))).value=''
+	ActiveSwatch=null
+}
+
+
+function makeWorkspace(){
+	linklist=""
+	workspace='<img style="position:relative" id=mapimage galleryimg=false src="">'
+
+	for (var i=0; i<maxTiles; i++){
+		linklist=linklist+'<input class=links id=linker'+i+' type=text value="" >'
+		linklist=linklist+'<input class=alts id=title'+i+' type=text value="" >'
+		workspace=workspace+'<div class=tile id=popup'+i+' style="left:'+(i*10)+'px; top:'+(i*10)+'px; '+
+		' width:100px; height:80px;  z-Index:'+i+'; visibility:hidden;" '+
+		' title="'+(i+1)+'. drag to move or resize" onSelectStart="return false" '+
+		' onmousedown="MovableItem=this; poplayer(this); return false" '+
+		' onMouseover="isHot=true;  " '+
+		' onMousemove="test(this, event.clientX, event.clientY ) " '+
+		' onMouseout ="isHot=false"'+
+		' > hotspot '+(i+1)+' </div>'
+	}
+
+	document.getElementById('linkbox').innerHTML=linklist
+	document.getElementById('workSpace').innerHTML=workspace
+
+
+}
+
+function loadImage(){
+	document.getElementById('mapimage').src=document.getElementById('imageInput').value
+	a=setTimeout("resizeImage()",500)
+	
+}
+function resizeImage(){
+	document.getElementById('mapimage').parentNode.style.width=document.getElementById('mapimage').offsetWidth
+	document.getElementById('mapimage').parentNode.style.height=document.getElementById('mapimage').offsetHeight
+}
+
+
+
+function makeMap(){
+	var key=Math.round(Math.random()*100)
+	img=document.getElementById('mapimage')
+	// removed the height as it made image disappear
+	mapSource='<img src="'+img.src+'" width="'+img.offsetWidth+'" border="0" usemap="#imap_'+key+'" >'
+	mapSource=mapSource+'\n<map id="imap_'+key+'" name="imap_'+key+'" >\n'
+	var validMap=false
+	for (var i=0; i<maxTiles; i++){
+		if (moveObject[i].style.visibility=='visible'){
+			mapSource=mapSource+
+			'  <area shape="rect" '+ 
+			'coords="'+moveObject[i].offsetLeft+','+moveObject[i].offsetTop+','+(moveObject[i].offsetLeft+moveObject[i].offsetWidth)+','+(moveObject[i].offsetTop+moveObject[i].offsetHeight)+'" '+
+			'alt="'+document.getElementById('title'+i).value+'" '+
+			'title="'+document.getElementById('title'+i).value+'" '+
+			'href="'+document.getElementById('linker'+i).value+'" '+
+			'target="_blank">\n'
+		validMap=true
+		}
+	}
+	mapSource=mapSource+'</map>\n'
+	if (!validMap){alert("Spot을 먼저 생성하세요")}else {
+	document.getElementById('codeWindow').value=mapSource
+	}
+}
+
+
+function puGetScreenSize() {
+	var myWidth = 0, myHeight = 0;
+	if( typeof( window.innerWidth ) == 'number' ) {
+		/*Non-IE*/
+		myWidth = window.innerWidth;
+		myHeight = window.innerHeight;
+	} else if( document.documentElement &&
+		( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+		/*IE 6+ in 'standards compliant mode'*/
+ 		myWidth = document.documentElement.clientWidth;
+		myHeight = document.documentElement.clientHeight;
+	} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+		/*IE 4 compatible*/
+		myWidth = document.body.clientWidth;
+		myHeight = document.body.clientHeight;
+	}
+	return [ myWidth, myHeight ];
+}
+
+function puGetScrollXY() {
+	var scrollXamt = 0, scrollYamt = 0;
+	if( typeof( window.pageYOffset ) == 'number' ) {
+		/*Netscape compliant*/
+		scrollYamt = window.pageYOffset;
+		scrollXamt = window.pageXOffset;
+	} else if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) {
+		/*DOM compliant*/
+		scrollYamt = document.body.scrollTop;
+		scrollXamt = document.body.scrollLeft;
+	} else if( document.documentElement &&
+		( document.documentElement.scrollLeft || document.documentElement.scrollTop ) ) {
+		/*IE6 standards compliant mode*/
+		scrollYamt = document.documentElement.scrollTop;
+		scrollXamt = document.documentElement.scrollLeft;
+	}
+	return [ scrollXamt, scrollYamt ];
+}
+
+
+function Preview(displaycode) {
+  	  var ww = window.open("","popupwindow","width=600,height=350,directories=no,menubar=yes,status=yes,toolbar=yes,resizable=yes,scrollbars=yes,screenY=0,top=0,screenX=80,left=80" );
+    	  ww.document.writeln("<html><head><title>미리보기</title></head><body>" );
+  	  ww.document.writeln(displaycode);
+  	  ww.document.writeln("<br clear=both><hr><form><center><input type=\"submit\" value=\"닫기\" onClick=\"window.close();return false; \"></center></form>" );
+  	  ww.document.writeln("</body></html>" );
+  	  ww.document.close() ;
+  	  if(document.focus){ ww.document.focus(true)}
+}
+
+//------------------
+// initialize
+//------------------
+function init(){
+	document.onmousedown=startMove;
+	document.onmouseup=Function("moveEnabled=false; MovableItem=''");
+	makeWorkspace();
+	for (var i=0; i<maxTiles; i++){ moveObject[i]=document.getElementById('popup'+i)}
+	ActiveSwatch=moveObject[0]
+}
+
+//-->
+</script>
+
+
+<style>
+.intext {width: 380px; height: 24px; 
+	font-family:arial, sans-serif; font-size:12px; padding:3px; xvisibility:hidden;
+}
+.tile 	{ 
+	position:absolute; border:1px solid silver; background-color:white;
+	filter:alpha(opacity=50); -moz-opacity:0.50; opacity:0.50;
+	font-family:arial, sans-serif; font-size:12px; padding:3px;
+	}
+.links  {position:absolute; left:0px; top:0px; width: 390px; height: 24px; 
+	font-family:arial, sans-serif; font-size:12px; padding:3px; visibility:hidden;
+	}
+.alts 	{position:absolute; left:0px; top:30px; width: 390px; height: 24px; 
+	font-family:arial, sans-serif; font-size:12px; padding:3px; visibility:hidden;
+	}
+.toolbtn {width:120px;line-height:20px}
+</style>
+
+
+
+
+<div>
+	<h2>이미지 영역지정 하이퍼링크 설정</h2>
+	<div class="wrap">
+		<label for="modal" class="button" style="color:red;">상세설명</label>
+	  </div>
+	  
+	  
+	  <input type="checkbox" id="modal" class="hidden">
+	  <div class="box_modal"style="position:absolute;">
+		<label for="modal" class="closer">x</label>
+		<div class="text">
+		  <h3>방법</h3>
+		  <p>1. 이미지 URL을 입력 후 이미지 로드 버튼을 클릭 하세요.<br>
+	  2. Spot 생성 버튼을 클릭하여 새로운 Spot영역을 생성할 수 있습니다.<br>(여러개 생성시는 생성하고자 하는 갯수만큼 클릭)<br>
+	  3. 하이퍼 링크 주소와 대체 텍스트를 기재 하세요.<br>
+	  4. 이미지 위에 생성된 맵 영역을 드래그하여 원하는 위치로 드래그 하세요.<br>
+	  5. 맵영역 크기 설정은 박스 귀퉁이를 드래그 하여 설정할 수 있습니다.<br>
+	  6. 코드 생성 버튼을 클릭하면 맵 코드를 생성 할 수 있습니다.<br>
+	  7. 미리보기 버튼 클릭하면 링크된 내용의 미리보기 할 수 있습니다.</p>
+		</div>
+	  </div>
+</div>
+<br>
+<table cellspacing="1" cellpadding="3" border="0" width="750" bgcolor="999999">
+	<colgroup>
+		<col width="30%">
+		<col width="30%">
+		<col width="40%">
+		<col width="30%">
+		
+		</colgroup>
+<tbody>
+	<tr style="background-color:white">
+	<td colspan="2" style="text-align:center;">이미지 URL 입력</td>
+	<td><input placeholder="이미지 URL을 입력하세요." type="text" id="imageInput" value="" class="intext"></td>
+	<td><input type="button" class="toolbtn" value="이미지 로드" onclick="loadImage()"></td>
+</tr>
+<tr style="background-color:white">
+	<td rowspan="2" style="text-align:center;">하이퍼링크 설정</td>
+	<td style="text-align:center;">링크</td>
+		<td rowspan="2"><div id="linkbox" style="position:relative; top:0px; left:0px; width:400px; height:60px; overflow:hidden;">
+			<input class="links" id="linker0" type="text" value=""> <br><input class="alts" id="title0" type="text" value="">
+			<input class="links" id="linker1" type="text" value=""> <br><input class="alts" id="title1" type="text" value="">
+			<input class="links" id="linker2" type="text" value=""> <br><input class="alts" id="title2" type="text" value="">
+			<input class="links" id="linker3" type="text" value=""> <br><input class="alts" id="title3" type="text" value="">
+			<input class="links" id="linker4" type="text" value=""> <br><input class="alts" id="title4" type="text" value="">
+			<input class="links" id="linker5" type="text" value=""> <br><input class="alts" id="title5" type="text" value="">
+			<input class="links" id="linker6" type="text" value=""> <br><input class="alts" id="title6" type="text" value="">
+			<input class="links" id="linker7" type="text" value=""> <br><input class="alts" id="title7" type="text" value="">
+			<input class="links" id="linker8" type="text" value=""> <br><input class="alts" id="title8" type="text" value="">
+			<input class="links" id="linker9" type="text" value=""> <br><input class="alts" id="title9" type="text" value="">
+			<input class="links" id="linker10" type="text" value=""> <br><input class="alts" id="title10" type="text" value="">
+			<input class="links" id="linker11" type="text" value=""> <br><input class="alts" id="title11" type="text" value="">
+			<input class="links" id="linker12" type="text" value=""> <br><input class="alts" id="title12" type="text" value="">
+			<input class="links" id="linker13" type="text" value=""> <br><input class="alts" id="title13" type="text" value="">
+			<input class="links" id="linker14" type="text" value=""> <br><input class="alts" id="title14" type="text" value="">
+			<input class="links" id="linker15" type="text" value=""> <br><input class="alts" id="title15" type="text" value="">
+			<input class="links" id="linker16" type="text" value=""> <br><input class="alts" id="title16" type="text" value="">
+			<input class="links" id="linker17" type="text" value=""> <br><input class="alts" id="title17" type="text" value="">
+			<input class="links" id="linker18" type="text" value=""> <br><input class="alts" id="title18" type="text" value="">
+			<input class="links" id="linker19" type="text" value=""> <br><input class="alts" id="title19" type="text" value="">
+			<input class="links" id="linker20" type="text" value=""> <br><input class="alts" id="title20" type="text" value="">
+			<input class="links" id="linker21" type="text" value=""> <br><input class="alts" id="title21" type="text" value="">
+			<input class="links" id="linker22" type="text" value=""> <br><input class="alts" id="title22" type="text" value="">
+			<input class="links" id="linker23" type="text" value=""> <br><input class="alts" id="title23" type="text" value="">
+			<input class="links" id="linker24" type="text" value=""> <br><input class="alts" id="title24" type="text" value="">
+			<input class="links" id="linker25" type="text" value=""> <br><input class="alts" id="title25" type="text" value="">
+			<input class="links" id="linker26" type="text" value=""> <br><input class="alts" id="title26" type="text" value="">
+			<input class="links" id="linker27" type="text" value=""> <br><input class="alts" id="title27" type="text" value="">
+			<input class="links" id="linker28" type="text" value=""> <br><input class="alts" id="title28" type="text" value="">
+			<input class="links" id="linker29" type="text" value=""> <br><input class="alts" id="title29" type="text" value="">
+			<input class="links" id="linker30" type="text" value=""> <br><input class="alts" id="title30" type="text" value="">
+			<input class="links" id="linker31" type="text" value=""> <br><input class="alts" id="title31" type="text" value="">
+			<input class="links" id="linker32" type="text" value=""> <br><input class="alts" id="title32" type="text" value="">
+			<input class="links" id="linker33" type="text" value=""> <br><input class="alts" id="title33" type="text" value="">
+			<input class="links" id="linker34" type="text" value=""> <br><input class="alts" id="title34" type="text" value="">
+			<input class="links" id="linker35" type="text" value=""> <br><input class="alts" id="title35" type="text" value="">
+			<input class="links" id="linker36" type="text" value=""> <br><input class="alts" id="title36" type="text" value="">
+			<input class="links" id="linker37" type="text" value=""> <br><input class="alts" id="title37" type="text" value="">
+			<input class="links" id="linker38" type="text" value=""> <br><input class="alts" id="title38" type="text" value="">
+			<input class="links" id="linker39" type="text" value=""> <br><input class="alts" id="title39" type="text" value="">
+			<input class="links" id="linker40" type="text" value=""> <br><input class="alts" id="title40" type="text" value="">
+			<input class="links" id="linker41" type="text" value=""> <br><input class="alts" id="title41" type="text" value="">
+			<input class="links" id="linker42" type="text" value=""> <br><input class="alts" id="title42" type="text" value="">
+			<input class="links" id="linker43" type="text" value=""> <br><input class="alts" id="title43" type="text" value="">
+			<input class="links" id="linker44" type="text" value=""> <br><input class="alts" id="title44" type="text" value="">
+			<input class="links" id="linker45" type="text" value=""> <br><input class="alts" id="title45" type="text" value="">
+			<input class="links" id="linker46" type="text" value=""> <br><input class="alts" id="title46" type="text" value="">
+			<input class="links" id="linker47" type="text" value=""> <br><input class="alts" id="title47" type="text" value="">
+			<input class="links" id="linker48" type="text" value=""> <br><input class="alts" id="title48" type="text" value="">
+			<input class="links" id="linker49" type="text" value=""> <br><input class="alts" id="title49" type="text" value="">
+			<input class="links" id="linker50" type="text" value=""> <br><input class="alts" id="title50" type="text" value="">
+			<input class="links" id="linker51" type="text" value=""> <br><input class="alts" id="title51" type="text" value="">
+			<input class="links" id="linker52" type="text" value=""> <br><input class="alts" id="title52" type="text" value="">
+			<input class="links" id="linker53" type="text" value=""> <br><input class="alts" id="title53" type="text" value="">
+			<input class="links" id="linker54" type="text" value=""> <br><input class="alts" id="title54" type="text" value="">
+			<input class="links" id="linker55" type="text" value=""> <br><input class="alts" id="title55" type="text" value="">
+			<input class="links" id="linker56" type="text" value=""> <br><input class="alts" id="title56" type="text" value="">
+			<input class="links" id="linker57" type="text" value=""> <br><input class="alts" id="title57" type="text" value="">
+			<input class="links" id="linker58" type="text" value=""> <br><input class="alts" id="title58" type="text" value="">
+			<input class="links" id="linker59" type="text" value=""> <br><input class="alts" id="title59" type="text" value="">
+			<input class="links" id="linker60" type="text" value=""> <br><input class="alts" id="title60" type="text" value="">
+			<input class="links" id="linker61" type="text" value=""> <br><input class="alts" id="title61" type="text" value="">
+			<input class="links" id="linker62" type="text" value=""> <br><input class="alts" id="title62" type="text" value="">
+			<input class="links" id="linker63" type="text" value=""> <br><input class="alts" id="title63" type="text" value="">
+			<input class="links" id="linker64" type="text" value=""> <br><input class="alts" id="title64" type="text" value="">
+			<input class="links" id="linker65" type="text" value=""> <br><input class="alts" id="title65" type="text" value="">
+			<input class="links" id="linker66" type="text" value=""> <br><input class="alts" id="title66" type="text" value="">
+			<input class="links" id="linker67" type="text" value=""> <br><input class="alts" id="title67" type="text" value="">
+			<input class="links" id="linker68" type="text" value=""> <br><input class="alts" id="title68" type="text" value="">
+			<input class="links" id="linker69" type="text" value=""> <br><input class="alts" id="title69" type="text" value="">
+			<input class="links" id="linker70" type="text" value=""> <br><input class="alts" id="title70" type="text" value="">
+			<input class="links" id="linker71" type="text" value=""> <br><input class="alts" id="title71" type="text" value="">
+			<input class="links" id="linker72" type="text" value=""> <br><input class="alts" id="title72" type="text" value="">
+			<input class="links" id="linker73" type="text" value=""> <br><input class="alts" id="title73" type="text" value="">
+			<input class="links" id="linker74" type="text" value=""> <br><input class="alts" id="title74" type="text" value="">
+			<input class="links" id="linker75" type="text" value=""> <br><input class="alts" id="title75" type="text" value="">
+			<input class="links" id="linker76" type="text" value=""> <br><input class="alts" id="title76" type="text" value="">
+			<input class="links" id="linker77" type="text" value=""> <br><input class="alts" id="title77" type="text" value="">
+			<input class="links" id="linker78" type="text" value=""> <br><input class="alts" id="title78" type="text" value="">
+			<input class="links" id="linker79" type="text" value=""> <br><input class="alts" id="title79" type="text" value="">
+			<input class="links" id="linker80" type="text" value=""> <br><input class="alts" id="title80" type="text" value="">
+			<input class="links" id="linker81" type="text" value=""> <br><input class="alts" id="title81" type="text" value="">
+			<input class="links" id="linker82" type="text" value=""> <br><input class="alts" id="title82" type="text" value="">
+			<input class="links" id="linker83" type="text" value=""> <br><input class="alts" id="title83" type="text" value="">
+			<input class="links" id="linker84" type="text" value=""> <br><input class="alts" id="title84" type="text" value="">
+			<input class="links" id="linker85" type="text" value=""> <br><input class="alts" id="title85" type="text" value="">
+			<input class="links" id="linker86" type="text" value=""> <br><input class="alts" id="title86" type="text" value="">
+			<input class="links" id="linker87" type="text" value=""> <br><input class="alts" id="title87" type="text" value="">
+			<input class="links" id="linker88" type="text" value=""> <br><input class="alts" id="title88" type="text" value="">
+			<input class="links" id="linker89" type="text" value=""> <br><input class="alts" id="title89" type="text" value="">
+			<input class="links" id="linker90" type="text" value=""> <br><input class="alts" id="title90" type="text" value="">
+			<input class="links" id="linker91" type="text" value=""> <br><input class="alts" id="title91" type="text" value="">
+			<input class="links" id="linker92" type="text" value=""> <br><input class="alts" id="title92" type="text" value="">
+			<input class="links" id="linker93" type="text" value=""> <br><input class="alts" id="title93" type="text" value="">
+			<input class="links" id="linker94" type="text" value=""> <br><input class="alts" id="title94" type="text" value="">
+			<input class="links" id="linker95" type="text" value=""> <br><input class="alts" id="title95" type="text" value="">
+			<input class="links" id="linker96" type="text" value=""> <br><input class="alts" id="title96" type="text" value="">
+			<input class="links" id="linker97" type="text" value=""> <br><input class="alts" id="title97" type="text" value="">
+			<input class="links" id="linker98" type="text" value=""> <br><input class="alts" id="title98" type="text" value="">
+			<input class="links" id="linker99" type="text" value=""> <br><input class="alts" id="title99" type="text" value=""></div></td>
+		<td rowspan="2">
+		<input type="button" class="toolbtn" value="Spot 생성" onclick="createTile()"><br> 
+		<input type="button" class="toolbtn" value="Spot 삭제" onclick="killTile()">
+	</td>
+</tr>
+<tr><td style="background-color:white;text-align:center;">대체 텍스트</td></tr>
+</tbody></table>
+<p>
+<table cellpadding="0" cellspacing="0" border="0" width="750">
+<tbody><tr>
+	<td style="border:1px #999999 solid"><div id="workSpace" style="position:relative;"><img style="position:relative" id="mapimage" galleryimg="false" src=""><div class="tile" id="popup0" style="left:0px; top:0px;  width:100px; height:80px;  z-Index:0; visibility:hidden;" title="1. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 1 </div><div class="tile" id="popup1" style="left:10px; top:10px;  width:100px; height:80px;  z-Index:1; visibility:hidden;" title="2. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 2 </div><div class="tile" id="popup2" style="left:20px; top:20px;  width:100px; height:80px;  z-Index:2; visibility:hidden;" title="3. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 3 </div><div class="tile" id="popup3" style="left:30px; top:30px;  width:100px; height:80px;  z-Index:3; visibility:hidden;" title="4. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 4 </div><div class="tile" id="popup4" style="left:40px; top:40px;  width:100px; height:80px;  z-Index:4; visibility:hidden;" title="5. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 5 </div><div class="tile" id="popup5" style="left:50px; top:50px;  width:100px; height:80px;  z-Index:5; visibility:hidden;" title="6. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 6 </div><div class="tile" id="popup6" style="left:60px; top:60px;  width:100px; height:80px;  z-Index:6; visibility:hidden;" title="7. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 7 </div><div class="tile" id="popup7" style="left:70px; top:70px;  width:100px; height:80px;  z-Index:7; visibility:hidden;" title="8. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 8 </div><div class="tile" id="popup8" style="left:80px; top:80px;  width:100px; height:80px;  z-Index:8; visibility:hidden;" title="9. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 9 </div><div class="tile" id="popup9" style="left:90px; top:90px;  width:100px; height:80px;  z-Index:9; visibility:hidden;" title="10. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 10 </div><div class="tile" id="popup10" style="left:100px; top:100px;  width:100px; height:80px;  z-Index:10; visibility:hidden;" title="11. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 11 </div><div class="tile" id="popup11" style="left:110px; top:110px;  width:100px; height:80px;  z-Index:11; visibility:hidden;" title="12. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 12 </div><div class="tile" id="popup12" style="left:120px; top:120px;  width:100px; height:80px;  z-Index:12; visibility:hidden;" title="13. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 13 </div><div class="tile" id="popup13" style="left:130px; top:130px;  width:100px; height:80px;  z-Index:13; visibility:hidden;" title="14. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 14 </div><div class="tile" id="popup14" style="left:140px; top:140px;  width:100px; height:80px;  z-Index:14; visibility:hidden;" title="15. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 15 </div><div class="tile" id="popup15" style="left:150px; top:150px;  width:100px; height:80px;  z-Index:15; visibility:hidden;" title="16. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 16 </div><div class="tile" id="popup16" style="left:160px; top:160px;  width:100px; height:80px;  z-Index:16; visibility:hidden;" title="17. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 17 </div><div class="tile" id="popup17" style="left:170px; top:170px;  width:100px; height:80px;  z-Index:17; visibility:hidden;" title="18. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 18 </div><div class="tile" id="popup18" style="left:180px; top:180px;  width:100px; height:80px;  z-Index:18; visibility:hidden;" title="19. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 19 </div><div class="tile" id="popup19" style="left:190px; top:190px;  width:100px; height:80px;  z-Index:19; visibility:hidden;" title="20. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 20 </div><div class="tile" id="popup20" style="left:200px; top:200px;  width:100px; height:80px;  z-Index:20; visibility:hidden;" title="21. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 21 </div><div class="tile" id="popup21" style="left:210px; top:210px;  width:100px; height:80px;  z-Index:21; visibility:hidden;" title="22. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 22 </div><div class="tile" id="popup22" style="left:220px; top:220px;  width:100px; height:80px;  z-Index:22; visibility:hidden;" title="23. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 23 </div><div class="tile" id="popup23" style="left:230px; top:230px;  width:100px; height:80px;  z-Index:23; visibility:hidden;" title="24. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 24 </div><div class="tile" id="popup24" style="left:240px; top:240px;  width:100px; height:80px;  z-Index:24; visibility:hidden;" title="25. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 25 </div><div class="tile" id="popup25" style="left:250px; top:250px;  width:100px; height:80px;  z-Index:25; visibility:hidden;" title="26. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 26 </div><div class="tile" id="popup26" style="left:260px; top:260px;  width:100px; height:80px;  z-Index:26; visibility:hidden;" title="27. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 27 </div><div class="tile" id="popup27" style="left:270px; top:270px;  width:100px; height:80px;  z-Index:27; visibility:hidden;" title="28. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 28 </div><div class="tile" id="popup28" style="left:280px; top:280px;  width:100px; height:80px;  z-Index:28; visibility:hidden;" title="29. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 29 </div><div class="tile" id="popup29" style="left:290px; top:290px;  width:100px; height:80px;  z-Index:29; visibility:hidden;" title="30. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 30 </div><div class="tile" id="popup30" style="left:300px; top:300px;  width:100px; height:80px;  z-Index:30; visibility:hidden;" title="31. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 31 </div><div class="tile" id="popup31" style="left:310px; top:310px;  width:100px; height:80px;  z-Index:31; visibility:hidden;" title="32. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 32 </div><div class="tile" id="popup32" style="left:320px; top:320px;  width:100px; height:80px;  z-Index:32; visibility:hidden;" title="33. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 33 </div><div class="tile" id="popup33" style="left:330px; top:330px;  width:100px; height:80px;  z-Index:33; visibility:hidden;" title="34. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 34 </div><div class="tile" id="popup34" style="left:340px; top:340px;  width:100px; height:80px;  z-Index:34; visibility:hidden;" title="35. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 35 </div><div class="tile" id="popup35" style="left:350px; top:350px;  width:100px; height:80px;  z-Index:35; visibility:hidden;" title="36. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 36 </div><div class="tile" id="popup36" style="left:360px; top:360px;  width:100px; height:80px;  z-Index:36; visibility:hidden;" title="37. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 37 </div><div class="tile" id="popup37" style="left:370px; top:370px;  width:100px; height:80px;  z-Index:37; visibility:hidden;" title="38. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 38 </div><div class="tile" id="popup38" style="left:380px; top:380px;  width:100px; height:80px;  z-Index:38; visibility:hidden;" title="39. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 39 </div><div class="tile" id="popup39" style="left:390px; top:390px;  width:100px; height:80px;  z-Index:39; visibility:hidden;" title="40. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 40 </div><div class="tile" id="popup40" style="left:400px; top:400px;  width:100px; height:80px;  z-Index:40; visibility:hidden;" title="41. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 41 </div><div class="tile" id="popup41" style="left:410px; top:410px;  width:100px; height:80px;  z-Index:41; visibility:hidden;" title="42. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 42 </div><div class="tile" id="popup42" style="left:420px; top:420px;  width:100px; height:80px;  z-Index:42; visibility:hidden;" title="43. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 43 </div><div class="tile" id="popup43" style="left:430px; top:430px;  width:100px; height:80px;  z-Index:43; visibility:hidden;" title="44. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 44 </div><div class="tile" id="popup44" style="left:440px; top:440px;  width:100px; height:80px;  z-Index:44; visibility:hidden;" title="45. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 45 </div><div class="tile" id="popup45" style="left:450px; top:450px;  width:100px; height:80px;  z-Index:45; visibility:hidden;" title="46. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 46 </div><div class="tile" id="popup46" style="left:460px; top:460px;  width:100px; height:80px;  z-Index:46; visibility:hidden;" title="47. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 47 </div><div class="tile" id="popup47" style="left:470px; top:470px;  width:100px; height:80px;  z-Index:47; visibility:hidden;" title="48. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 48 </div><div class="tile" id="popup48" style="left:480px; top:480px;  width:100px; height:80px;  z-Index:48; visibility:hidden;" title="49. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 49 </div><div class="tile" id="popup49" style="left:490px; top:490px;  width:100px; height:80px;  z-Index:49; visibility:hidden;" title="50. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 50 </div><div class="tile" id="popup50" style="left:500px; top:500px;  width:100px; height:80px;  z-Index:50; visibility:hidden;" title="51. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 51 </div><div class="tile" id="popup51" style="left:510px; top:510px;  width:100px; height:80px;  z-Index:51; visibility:hidden;" title="52. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 52 </div><div class="tile" id="popup52" style="left:520px; top:520px;  width:100px; height:80px;  z-Index:52; visibility:hidden;" title="53. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 53 </div><div class="tile" id="popup53" style="left:530px; top:530px;  width:100px; height:80px;  z-Index:53; visibility:hidden;" title="54. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 54 </div><div class="tile" id="popup54" style="left:540px; top:540px;  width:100px; height:80px;  z-Index:54; visibility:hidden;" title="55. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 55 </div><div class="tile" id="popup55" style="left:550px; top:550px;  width:100px; height:80px;  z-Index:55; visibility:hidden;" title="56. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 56 </div><div class="tile" id="popup56" style="left:560px; top:560px;  width:100px; height:80px;  z-Index:56; visibility:hidden;" title="57. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 57 </div><div class="tile" id="popup57" style="left:570px; top:570px;  width:100px; height:80px;  z-Index:57; visibility:hidden;" title="58. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 58 </div><div class="tile" id="popup58" style="left:580px; top:580px;  width:100px; height:80px;  z-Index:58; visibility:hidden;" title="59. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 59 </div><div class="tile" id="popup59" style="left:590px; top:590px;  width:100px; height:80px;  z-Index:59; visibility:hidden;" title="60. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 60 </div><div class="tile" id="popup60" style="left:600px; top:600px;  width:100px; height:80px;  z-Index:60; visibility:hidden;" title="61. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 61 </div><div class="tile" id="popup61" style="left:610px; top:610px;  width:100px; height:80px;  z-Index:61; visibility:hidden;" title="62. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 62 </div><div class="tile" id="popup62" style="left:620px; top:620px;  width:100px; height:80px;  z-Index:62; visibility:hidden;" title="63. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 63 </div><div class="tile" id="popup63" style="left:630px; top:630px;  width:100px; height:80px;  z-Index:63; visibility:hidden;" title="64. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 64 </div><div class="tile" id="popup64" style="left:640px; top:640px;  width:100px; height:80px;  z-Index:64; visibility:hidden;" title="65. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 65 </div><div class="tile" id="popup65" style="left:650px; top:650px;  width:100px; height:80px;  z-Index:65; visibility:hidden;" title="66. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 66 </div><div class="tile" id="popup66" style="left:660px; top:660px;  width:100px; height:80px;  z-Index:66; visibility:hidden;" title="67. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 67 </div><div class="tile" id="popup67" style="left:670px; top:670px;  width:100px; height:80px;  z-Index:67; visibility:hidden;" title="68. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 68 </div><div class="tile" id="popup68" style="left:680px; top:680px;  width:100px; height:80px;  z-Index:68; visibility:hidden;" title="69. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 69 </div><div class="tile" id="popup69" style="left:690px; top:690px;  width:100px; height:80px;  z-Index:69; visibility:hidden;" title="70. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 70 </div><div class="tile" id="popup70" style="left:700px; top:700px;  width:100px; height:80px;  z-Index:70; visibility:hidden;" title="71. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 71 </div><div class="tile" id="popup71" style="left:710px; top:710px;  width:100px; height:80px;  z-Index:71; visibility:hidden;" title="72. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 72 </div><div class="tile" id="popup72" style="left:720px; top:720px;  width:100px; height:80px;  z-Index:72; visibility:hidden;" title="73. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 73 </div><div class="tile" id="popup73" style="left:730px; top:730px;  width:100px; height:80px;  z-Index:73; visibility:hidden;" title="74. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 74 </div><div class="tile" id="popup74" style="left:740px; top:740px;  width:100px; height:80px;  z-Index:74; visibility:hidden;" title="75. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 75 </div><div class="tile" id="popup75" style="left:750px; top:750px;  width:100px; height:80px;  z-Index:75; visibility:hidden;" title="76. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 76 </div><div class="tile" id="popup76" style="left:760px; top:760px;  width:100px; height:80px;  z-Index:76; visibility:hidden;" title="77. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 77 </div><div class="tile" id="popup77" style="left:770px; top:770px;  width:100px; height:80px;  z-Index:77; visibility:hidden;" title="78. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 78 </div><div class="tile" id="popup78" style="left:780px; top:780px;  width:100px; height:80px;  z-Index:78; visibility:hidden;" title="79. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 79 </div><div class="tile" id="popup79" style="left:790px; top:790px;  width:100px; height:80px;  z-Index:79; visibility:hidden;" title="80. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 80 </div><div class="tile" id="popup80" style="left:800px; top:800px;  width:100px; height:80px;  z-Index:80; visibility:hidden;" title="81. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 81 </div><div class="tile" id="popup81" style="left:810px; top:810px;  width:100px; height:80px;  z-Index:81; visibility:hidden;" title="82. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 82 </div><div class="tile" id="popup82" style="left:820px; top:820px;  width:100px; height:80px;  z-Index:82; visibility:hidden;" title="83. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 83 </div><div class="tile" id="popup83" style="left:830px; top:830px;  width:100px; height:80px;  z-Index:83; visibility:hidden;" title="84. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 84 </div><div class="tile" id="popup84" style="left:840px; top:840px;  width:100px; height:80px;  z-Index:84; visibility:hidden;" title="85. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 85 </div><div class="tile" id="popup85" style="left:850px; top:850px;  width:100px; height:80px;  z-Index:85; visibility:hidden;" title="86. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 86 </div><div class="tile" id="popup86" style="left:860px; top:860px;  width:100px; height:80px;  z-Index:86; visibility:hidden;" title="87. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 87 </div><div class="tile" id="popup87" style="left:870px; top:870px;  width:100px; height:80px;  z-Index:87; visibility:hidden;" title="88. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 88 </div><div class="tile" id="popup88" style="left:880px; top:880px;  width:100px; height:80px;  z-Index:88; visibility:hidden;" title="89. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 89 </div><div class="tile" id="popup89" style="left:890px; top:890px;  width:100px; height:80px;  z-Index:89; visibility:hidden;" title="90. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 90 </div><div class="tile" id="popup90" style="left:900px; top:900px;  width:100px; height:80px;  z-Index:90; visibility:hidden;" title="91. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 91 </div><div class="tile" id="popup91" style="left:910px; top:910px;  width:100px; height:80px;  z-Index:91; visibility:hidden;" title="92. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 92 </div><div class="tile" id="popup92" style="left:920px; top:920px;  width:100px; height:80px;  z-Index:92; visibility:hidden;" title="93. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 93 </div><div class="tile" id="popup93" style="left:930px; top:930px;  width:100px; height:80px;  z-Index:93; visibility:hidden;" title="94. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 94 </div><div class="tile" id="popup94" style="left:940px; top:940px;  width:100px; height:80px;  z-Index:94; visibility:hidden;" title="95. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 95 </div><div class="tile" id="popup95" style="left:950px; top:950px;  width:100px; height:80px;  z-Index:95; visibility:hidden;" title="96. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 96 </div><div class="tile" id="popup96" style="left:960px; top:960px;  width:100px; height:80px;  z-Index:96; visibility:hidden;" title="97. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 97 </div><div class="tile" id="popup97" style="left:970px; top:970px;  width:100px; height:80px;  z-Index:97; visibility:hidden;" title="98. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 98 </div><div class="tile" id="popup98" style="left:980px; top:980px;  width:100px; height:80px;  z-Index:98; visibility:hidden;" title="99. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 99 </div><div class="tile" id="popup99" style="left:990px; top:990px;  width:100px; height:80px;  z-Index:99; visibility:hidden;" title="100. drag to move or resize" onselectstart="return false" onmousedown="MovableItem=this; poplayer(this); return false" onmouseover="isHot=true;  " onmousemove="test(this, event.clientX, event.clientY ) " onmouseout="isHot=false"> hotspot 100 </div></div></td>
+</tr>
+</tbody></table><br>
+<table width="750" cellspacing="2" cellpadding="3" border="0">
+<tbody><tr>
+	<td><input type="button" value="코드 생성" onclick="makeMap()"></td>
+	<td align="right"><input type="button" value="미리보기" onclick="Preview(document.getElementById('codeWindow').value)"></td>
+</tr>
+<tr><td colspan="2"><textarea id="codeWindow" style="width:750; height:200px; background-color:beige"></textarea></td></tr>
+</tbody></table>
+<script>init()</script>
+</html>
