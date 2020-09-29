@@ -105,9 +105,17 @@
 				<li class="cd-label">Action</li>
 				<li class="action-btn"><a href="#0">부관리자 관리</a></li><br>
 				<li class="action-btn"><a href="#0">하위관리자 관리</a></li><br>
-				<li class="action-btn"><a href="/service/hyperlink.html">하이퍼링크 설정</a></li>
+				<li class="action-btn"><a href="javascript:popup()" target="_blank">하이퍼링크 설정</a></li>
 			</ul>
 		</nav>
+		<script>
+			function popup(){
+				var url = "/service/hyperlink.html";
+				var name = "이미지 영역지정 하이퍼링크 설정";
+				var option = "width = 500, height = 500, top = 100, left = 200, location = no"
+				window.open(url, name, option);
+			}
+		</script>
 
 		<div class="content-wrapper">
 			<h1>관리자 화면 입니다.</h1>
