@@ -11,6 +11,14 @@
 	<script src="js/modernizr.js"></script> <!-- Modernizr -->
   	
 	<title>홈페이지 관리자</title>
+	<script>
+		function popup(){
+			var url = "/service/hyperlink.html";
+			var name = "이미지 영역지정 하이퍼링크 설정";
+			var option = "width = 800, height = 1200, top = 100, left = 200, location = no"
+			window.open(url, name, option);
+		}
+	</script>
 </head>
 <body>
 	<header class="cd-main-header">
@@ -108,15 +116,7 @@
 				<li class="action-btn"><a href="javascript:popup()" target="_blank">하이퍼링크 설정</a></li>
 			</ul>
 		</nav>
-		<script>
-			function popup(){
-				var url = "/service/hyperlink.html";
-				var name = "이미지 영역지정 하이퍼링크 설정";
-				var option = "width = 800, height = 1200, top = 100, left = 200, location = no"
-				window.open(url, name, option);
-			}
-		</script>
-
+	
 		<div class="content-wrapper">
 			<h1>관리자 화면 입니다.</h1>
 		</div> <!-- .content-wrapper -->
